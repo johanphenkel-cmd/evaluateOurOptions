@@ -1,0 +1,10 @@
+name = "evaluteOurOptions"
+version = "0.1.0"
+defaultTargets = ["evaluteouroptions"]
+
+[[lean_lib]]
+name = "EvaluteOurOptions"
+
+[[lean_exe]]
+name = "evaluteouroptions"
+root = "Main"
