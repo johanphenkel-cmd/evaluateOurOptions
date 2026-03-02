@@ -1,3 +1,3 @@
--- This module serves as the root of the `EvaluteOurOptions` library.
+-- This module serves as the root of the `EvaluateOurOptions` library.
 -- Import modules here that should be built as part of the library.
-import EvaluteOurOptions.Basic
+import EvaluateOurOptions.Basic
