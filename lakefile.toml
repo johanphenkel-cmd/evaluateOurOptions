@@ -1,10 +1,10 @@
-name = "evaluteOurOptions"
+name = "evaluateOurOptions"
 version = "0.1.0"
-defaultTargets = ["evaluteouroptions"]
+defaultTargets = ["evaluateouroptions"]
 
 [[lean_lib]]
-name = "EvaluteOurOptions"
+name = "EvaluateOurOptions"
 
 [[lean_exe]]
-name = "evaluteouroptions"
+name = "evaluateouroptions"
 root = "Main"
