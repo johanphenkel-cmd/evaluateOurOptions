@@ -69,3 +69,47 @@ def myMergeSort2 [Inhabited α] (xs : Array α) (le : α → α → Bool) : Arra
 def testValues2 : Array Nat := #[47, 13, 82, 6, 91, 34, 57, 23, 76, 41, 88, 3, 65, 29, 54, 17, 72, 39, 84, 11, 63, 28, 95, 42, 7, 56, 31, 78, 19, 67, 44, 90, 25, 58, 14, 83, 37, 62, 9, 71, 48, 26, 93, 15, 52, 38, 77, 22, 69, 4, 86, 33, 61, 18, 45, 79, 12, 57, 35, 81, 24, 68, 43, 96, 8, 53, 27, 74, 16, 89, 41, 64, 30, 55, 20, 73, 46, 85, 10, 60, 36, 92, 21, 49, 66, 32, 75, 5, 87, 40, 59, 28, 70, 38, 94, 50, 80, 2, 97, 44]
 #eval myMergeSort2 testValues2 le_Nat
 #eval (myMergeSort1 testValues2 testValues2 le_Nat (by decide) = myMergeSort2 testValues2 le_Nat)
+
+
+--heapsort with max-heap
+def par := fun i => (i-1) / 2
+def lCh := (· * 2 + 1)
+def rCh := (· * 2 + 2)
+
+def Array.swap! [Inhabited α] (xs : Array α) (i j : Nat) : Array α :=
+  let tmp := xs[i]!
+  (xs.set! i xs[j]!).set! j tmp
+
+partial def siftDown [Inhabited α] (le : α → α → Bool) (heap : Array α) (i heapsize : Nat): Array α :=
+  if (lCh i < heapsize) ∧ (le heap[i]! heap[lCh i]!) then
+    if (rCh i < heapsize) ∧ (le heap[i]! heap[rCh i]!) then
+      if le heap[lCh i]! heap[rCh i]! then
+        siftDown le (heap.swap! (rCh i) i) (rCh i) heapsize
+      else
+        siftDown le (heap.swap! (lCh i) i) (lCh i) heapsize
+    else
+      siftDown le (heap.swap! (lCh i) i) (lCh i) heapsize
+  else
+    if (rCh i < heapsize) ∧ (le heap[i]! heap[rCh i]!) then
+      siftDown le (heap.swap! (rCh i) i) (rCh i) heapsize
+    else
+      heap
+
+def cH_helper [Inhabited α] (le : α → α → Bool) (xs : Array α) (i : Nat): Array α :=
+  if i = 0 then
+    siftDown le xs 0 xs.size
+  else
+    cH_helper le (siftDown le xs i xs.size) (i-1)
+
+def createHeap [Inhabited α] (le : α → α → Bool) (xs : Array α) : Array α :=
+  cH_helper le xs (xs.size/2 - 1)
+
+def mHS_helper [Inhabited α] (le : α → α → Bool) (heap : Array α) (heapsize : Nat): Array α :=
+  if heapsize = 0 then heap
+  else
+    mHS_helper le (siftDown le (heap.swap! 0 (heapsize - 1)) 0 (heapsize-1)) (heapsize - 1)
+
+def myHeapSort [Inhabited α] (le : α → α → Bool) (xs : Array α) : Array α :=
+  mHS_helper le (createHeap le xs) xs.size
+
+#eval myHeapSort le_Nat testValues
