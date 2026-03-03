@@ -71,6 +71,10 @@ def testValues2 : Array Nat := #[47, 13, 82, 6, 91, 34, 57, 23, 76, 41, 88, 3, 6
 #eval (myMergeSort1 testValues2 testValues2 le_Nat (by decide) = myMergeSort2 testValues2 le_Nat)
 
 -- Quicksort
+inductive Todo (α : Type)
+| Sort : Array α -> Todo α
+| Push : α -> Todo α
+
 def coinflip (arr : Array α) : Option (α × Array α) :=
   if h : arr.size > 0 then some (arr[0], arr.extract 1 arr.size)
   else none
@@ -79,13 +83,23 @@ def pivotsplit [Ord α] (arr : Array α) (pvt : α) : Array α × Array α :=
   (arr.filter (fun x => compare x pvt != .gt),
    arr.filter (fun x => compare x pvt == .gt))
 
-partial def quicksort [Ord α] (arr : Array α) : Array α :=
-  match coinflip arr with
-  | none => #[]
-  | some (hd, #[]) => #[hd]
-  | some (hd, tl) =>
-    let (lt, gt) := pivotsplit tl hd
-    quicksort lt ++ quicksort gt
+partial def quicksortHelper [Ord α] (todos : List (Todo α)) (acc : Array α) : Array α :=
+  match todos with
+  | [] => acc
+  | inst :: rest =>
+    match inst with
+    | Todo.Push x => quicksortHelper rest (acc.push x)
+    | Todo.Sort arr =>
+      match coinflip arr with
+      | none => quicksortHelper rest acc
+      | some (hd, #[]) => quicksortHelper rest (acc.push hd)
+      | some (hd, tl) =>
+        let (lt, gt) := pivotsplit tl hd
+        let newtodos := [Todo.Sort lt, Todo.Push hd, Todo.Sort gt] ++ rest
+        quicksortHelper newtodos acc
+
+def quicksort [Ord α] (arr : Array α) : Array α :=
+  quicksortHelper [Todo.Sort arr] #[]
 
 def demoArray : Array Nat := #[47, 13, 82, 6, 91, 34, 57, 23, 76, 41, 88, 3, 65, 29, 54, 17, 72, 39, 84, 11, 63, 28, 95, 42, 7, 56, 31, 78, 19, 67, 44, 90, 25, 58, 14, 83, 37, 62, 9, 71, 48, 26, 93, 15, 52, 38, 77, 22, 69, 4, 86, 33, 61, 18, 45, 79, 12, 57, 35, 81, 24, 68, 43, 96, 8, 53, 27, 74, 16, 89, 41, 64, 30, 55, 20, 73, 46, 85, 10, 60, 36, 92, 21, 49, 66, 32, 75, 5, 87, 40, 59, 28, 70, 38, 94, 50, 80, 2, 97, 44]
 #eval quicksort demoArray
