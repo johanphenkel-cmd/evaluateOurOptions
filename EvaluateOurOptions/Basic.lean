@@ -75,13 +75,33 @@ inductive Todo (α : Type)
 | Sort : Array α -> Todo α
 | Push : α -> Todo α
 
-def coinflip (arr : Array α) : Option (α × Array α) :=
-  if h : arr.size > 0 then some (arr[0], arr.extract 1 arr.size)
-  else none
+def pivotselect [Ord α] (arr : Array α) : Option (α × Array α) :=
+  if h : arr.size = 0 then none
+  else if h : arr.size < 3 then some (arr[0], arr.extract 1 arr.size)
+  else
+    let size := arr.size
+    let half := size/2
+    let p1 := arr[0]
+    let p2 := arr[half]
+    let p3 := arr[size-1]
+    let le := fun a b => compare a b != .gt
+    if le p1 p2 then
+      if le p2 p3 then some (p2, (arr.extract 0 half) ++ (arr.extract (half+1) size))
+      else if le p1 p3 then some (p3, arr.extract 0 (size-1))
+      else some (p1, arr.extract 1 size)
+    else
+      if le p1 p3 then some (p1, arr.extract 1 size)
+      else if le p2 p3 then some (p3, arr.extract 0 (size-1))
+      else some (p2, (arr.extract 0 half) ++ (arr.extract (half+1) size))
+
+partial def pivotsplitHelper [Ord α] (arr le gt : Array α) (pvt : α) : Array α × Array α :=
+  if h : arr.size = 0 then (le, gt)
+  else
+    if compare arr[0] pvt != .gt then pivotsplitHelper (arr.extract 1 arr.size) (le ++ #[arr[0]]) gt pvt
+    else pivotsplitHelper (arr.extract 1 arr.size) le (gt ++ #[arr[0]]) pvt
 
 def pivotsplit [Ord α] (arr : Array α) (pvt : α) : Array α × Array α :=
-  (arr.filter (fun x => compare x pvt != .gt),
-   arr.filter (fun x => compare x pvt == .gt))
+  pivotsplitHelper arr #[] #[] pvt
 
 partial def quicksortHelper [Ord α] (todos : List (Todo α)) (acc : Array α) : Array α :=
   match todos with
@@ -90,7 +110,7 @@ partial def quicksortHelper [Ord α] (todos : List (Todo α)) (acc : Array α) :
     match inst with
     | Todo.Push x => quicksortHelper rest (acc.push x)
     | Todo.Sort arr =>
-      match coinflip arr with
+      match pivotselect arr with
       | none => quicksortHelper rest acc
       | some (hd, #[]) => quicksortHelper rest (acc.push hd)
       | some (hd, tl) =>
@@ -107,7 +127,7 @@ def demoArray2 : Array String := #["Byte", "Gamma", "%", "Alpha", "·", "Beta", 
 #eval quicksort demoArray2
 
 -- TODO:
--- · Smart pivot selection / Alternate algorithm
+-- · Alternate algorithm
 -- · Commentary for future reference
 -- · Prove termination
 -- · Prove sorting
