@@ -1,4 +1,4 @@
 # evaluateOurOptions
 - Ping-Pong Mergesort: Done
-- smart Quicksort: WIP
+- smart Quicksort: Done
 - Heapsort: Done
