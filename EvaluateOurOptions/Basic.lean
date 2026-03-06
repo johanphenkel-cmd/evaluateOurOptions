@@ -94,12 +94,13 @@ def pivotselect [Ord α] (arr : Array α) : Option (α × Array α) := -- picks 
       else if le p2 p3 then some (p3, arr.extract 0 (size-1)) -- p2 p3 p1 -> last
       else some (p2, (arr.extract 0 half) ++ (arr.extract (half+1) size)) -- p3 p2 p1 -> middle
 
-partial def pivotsplitHelper [Ord α] (arr le gt : Array α) (pvt : α) : Array α × Array α := -- split array into less or equal and greater than pivot in one recursive pass
+def pivotsplitHelper [Ord α] (arr le gt : Array α) (pvt : α) : Array α × Array α := -- split array into less or equal and greater than pivot in one recursive pass
   let size := arr.size
   if h : size = 0 then (le, gt) -- if done then return
   else
     if compare arr[0] pvt != .gt then pivotsplitHelper (arr.extract 1 size) (le ++ #[arr[0]]) gt pvt -- not greater -> less or equal -> add to le
     else pivotsplitHelper (arr.extract 1 size) le (gt ++ #[arr[0]]) pvt -- greater -> add to gt
+termination_by arr.size
 
 def pivotsplit [Ord α] (arr : Array α) (pvt : α) : Array α × Array α := -- initializes pivotsplitHelper with empty le/gt arrays
   pivotsplitHelper arr #[] #[] pvt
